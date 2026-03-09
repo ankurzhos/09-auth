@@ -5,14 +5,14 @@ import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useDebouncedCallback } from 'use-debounce';
 import Link from 'next/link';
 
-import { fetchNotes } from '@/lib/api';
+import { fetchNotes } from '@/lib/api/clientApi';
 import NoteList from '@/components/NoteList/NoteList';
 import SearchBox from '@/components/SearchBox/SearchBox';
 import Pagination from '@/components/Pagination/Pagination';
 
 import { NoteTag } from '@/types/note';
 
-import css from '@/app/notes/NotesPage.module.css';
+import css from '@/app/(private routes)/notes/NotesPage.module.css';
 
 const PER_PAGE = 12;
 
