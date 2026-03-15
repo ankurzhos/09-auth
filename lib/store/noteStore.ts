@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { NoteTag } from '@/types/note';
 
 interface Draft {
@@ -32,6 +32,9 @@ export const useNoteStore = create<NoteStore>()(
     }),
     {
       name: 'note-draft',
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );
+
+export { initialDraft };

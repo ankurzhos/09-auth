@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-import css from '@/app/page.module.css';
+import css from '@/app/Home.module.css';
 
 export const metadata: Metadata = {
   title: '404 - Page not found',
@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: '404 - Page not found',
     description: 'Sorry, the page you are looking for does not exist.',
-    url: 'https://notehub.app/404',
+    url: 'https://09-zustand-psi-dusky.vercel.app/404',
     images: [
       {
         url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',

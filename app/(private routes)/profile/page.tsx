@@ -3,6 +3,7 @@ import { getMe } from '@/lib/api/serverApi';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Metadata } from 'next';
+import axios from 'axios';
 import css from '@/app/(private routes)/profile/ProfilePage.module.css';
 
 export const metadata: Metadata = {

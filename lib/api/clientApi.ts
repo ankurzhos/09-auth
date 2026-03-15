@@ -1,4 +1,4 @@
-import { apiClient } from './index';
+import { apiClient } from './api';
 import { User } from '@/types/user';
 import { Note, NoteTag, NoteId } from '@/types/note';
 

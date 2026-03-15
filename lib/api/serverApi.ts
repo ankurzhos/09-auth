@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { User } from '@/types/user';
 import { Note } from '@/types/note';
-import { FetchNotesResponse, FetchNotesParams } from './api/clientApi';
+import { FetchNotesResponse, FetchNotesParams } from './clientApi';
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL + '/api';
 
