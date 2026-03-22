@@ -8,7 +8,9 @@ const publicRoutes = ['/sign-in', '/sign-up'];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
   const cookieStore = await cookies();
+
   const accessToken = cookieStore.get('accessToken')?.value;
   const refreshToken = cookieStore.get('refreshToken')?.value;
 
@@ -17,55 +19,39 @@ export async function proxy(request: NextRequest) {
 
   if (!accessToken) {
     if (refreshToken) {
-      const data = await checkSession();
-      const setCookie = data.headers['set-cookie'];
+      const response = await checkSession();
+      const setCookie = response.headers['set-cookie'];
 
       if (setCookie) {
         const cookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
-        for (const cookieStr of cookieArray) {
-          const parsed = parse(cookieStr);
-          const options = {
-            expires: parsed.Expires ? new Date(parsed.Expires) : undefined,
-            path: parsed.Path,
-            maxAge: Number(parsed['Max-Age']),
-          };
+        cookieArray.forEach(cookieString => {
+          const [nameValue, ...attrs] = cookieString.split(';');
+          const parsed = parse(nameValue);
+
+          const options: { path?: string; expires?: Date; maxAge?: number } = {};
+          attrs.forEach(attr => {
+            const [key, value] = attr.trim().split('=');
+            if (!value) return;
+            if (key.toLowerCase() === 'path') options.path = value;
+            if (key.toLowerCase() === 'expires') options.expires = new Date(value);
+            if (key.toLowerCase() === 'max-age') options.maxAge = Number(value);
+          });
+
           if (parsed.accessToken) cookieStore.set('accessToken', parsed.accessToken, options);
           if (parsed.refreshToken) cookieStore.set('refreshToken', parsed.refreshToken, options);
-        }
+        });
 
-        if (isPublicRoute) {
-          return NextResponse.redirect(new URL('/', request.url), {
-            headers: {
-              Cookie: cookieStore.toString(),
-            },
-          });
-        }
-
-        if (isPrivateRoute) {
-          return NextResponse.next({
-            headers: {
-              Cookie: cookieStore.toString(),
-            },
-          });
-        }
+        if (isPublicRoute) return NextResponse.redirect(new URL('/', request.url));
+        if (isPrivateRoute) return NextResponse.next();
       }
     }
-    if (isPublicRoute) {
-      return NextResponse.next();
-    }
 
-    if (isPrivateRoute) {
-      return NextResponse.redirect(new URL('/sign-in', request.url));
-    }
-  }
-
-  if (isPublicRoute) {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  if (isPrivateRoute) {
+    if (isPrivateRoute) return NextResponse.redirect(new URL('/sign-in', request.url));
     return NextResponse.next();
   }
+
+  if (isPublicRoute) return NextResponse.redirect(new URL('/', request.url));
+  if (isPrivateRoute) return NextResponse.next();
 }
 
 export const config = {

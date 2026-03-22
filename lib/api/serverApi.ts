@@ -1,36 +1,27 @@
-import axios from 'axios';
 import { cookies } from 'next/headers';
 import { apiClient } from './api';
 import { User } from '@/types/user';
 import { Note } from '@/types/note';
 import { FetchNotesResponse, FetchNotesParams } from './clientApi';
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL + '/api';
-
-export const serverApiClient = (cookie?: string) => {
-  const headers: Record<string, string> = {};
-  if (cookie) {
-    headers.Cookie = cookie;
-  }
-  return axios.create({
-    baseURL,
-    headers,
-    withCredentials: true,
+export const fetchNotes = async (params: FetchNotesParams): Promise<FetchNotesResponse> => {
+  const cookieStore = await cookies();
+  const { data } = await apiClient.get<FetchNotesResponse>('/notes', {
+    params,
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
   });
-};
-
-export const fetchNotes = async (
-  params: FetchNotesParams,
-  cookie?: string
-): Promise<FetchNotesResponse> => {
-  const client = serverApiClient(cookie);
-  const { data } = await client.get<FetchNotesResponse>('/notes', { params });
   return data;
 };
 
-export const fetchNoteById = async (id: string, cookie?: string): Promise<Note> => {
-  const client = serverApiClient(cookie);
-  const { data } = await client.get<Note>(`/notes/${id}`);
+export const fetchNoteById = async (id: string): Promise<Note> => {
+  const cookieStore = await cookies();
+  const { data } = await apiClient.get<Note>(`/notes/${id}`, {
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+  });
   return data;
 };
 
@@ -44,12 +35,24 @@ export const getMe = async (): Promise<User> => {
   return data;
 };
 
-export const checkSession = async () => {
+export interface CheckSessionResponse {
+  headers: Record<string, string | string[] | undefined>;
+  data: {
+    accessToken?: string;
+    refreshToken?: string;
+    user?: User;
+  };
+}
+
+export const checkSession = async (): Promise<CheckSessionResponse> => {
   const cookieStore = await cookies();
-  const res = await apiClient.get<User>('/auth/session', {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
+  const res = await apiClient.get<CheckSessionResponse['data']>('/auth/session', {
+    headers: { Cookie: cookieStore.toString() },
   });
-  return res;
+
+  const safeHeaders: Record<string, string | string[] | undefined> = Object.fromEntries(
+    Object.entries(res.headers).map(([key, value]) => [key, value ?? undefined])
+  );
+
+  return { headers: safeHeaders, data: res.data };
 };
