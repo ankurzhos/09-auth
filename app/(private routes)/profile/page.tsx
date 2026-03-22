@@ -1,9 +1,7 @@
-import { cookies } from 'next/headers';
 import { getMe } from '@/lib/api/serverApi';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Metadata } from 'next';
-import axios from 'axios';
 import css from '@/app/(private routes)/profile/ProfilePage.module.css';
 
 export const metadata: Metadata = {
@@ -12,9 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilePage() {
-  const cookieStore = await cookies();
-  const cookie = cookieStore.toString();
-  const user = await getMe(cookie);
+  const user = await getMe();
 
   return (
     <main className={css.mainContent}>

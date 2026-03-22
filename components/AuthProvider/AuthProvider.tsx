@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
-import { checkSession } from '@/lib/api/clientApi';
+import { checkSession, getMe } from '@/lib/api/clientApi';
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -13,19 +13,22 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   const verifySession = useCallback(async () => {
     try {
-      const user = await checkSession();
+      await checkSession();
+      const user = await getMe();
+
       if (user) {
         setUser(user);
       } else {
-        clearAuth();
-
-        const isPrivate = pathname.startsWith('/profile') || pathname.startsWith('/notes');
-        if (isPrivate) {
-          router.push('/sign-in');
-        }
+        throw new Error('No user');
       }
     } catch {
       clearAuth();
+
+      const isPrivate = pathname.startsWith('/profile') || pathname.startsWith('/notes');
+
+      if (isPrivate) {
+        router.push('/sign-in');
+      }
     } finally {
       setIsLoading(false);
     }

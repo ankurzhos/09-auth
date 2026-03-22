@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { cookies } from 'next/headers';
+import { apiClient } from './api';
 import { User } from '@/types/user';
 import { Note } from '@/types/note';
 import { FetchNotesResponse, FetchNotesParams } from './clientApi';
@@ -32,18 +34,22 @@ export const fetchNoteById = async (id: string, cookie?: string): Promise<Note> 
   return data;
 };
 
-export const getMe = async (cookie?: string): Promise<User> => {
-  const client = serverApiClient(cookie);
-  const { data } = await client.get<User>('/users/me');
+export const getMe = async (): Promise<User> => {
+  const cookieStore = await cookies();
+  const { data } = await apiClient.get<User>('/users/me', {
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+  });
   return data;
 };
 
-export const checkSession = async (cookie?: string): Promise<User | null> => {
-  try {
-    const client = serverApiClient(cookie);
-    const { data } = await client.get<User>('/auth/session');
-    return data;
-  } catch {
-    return null;
-  }
+export const checkSession = async () => {
+  const cookieStore = await cookies();
+  const res = await apiClient.get<User>('/auth/session', {
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+  });
+  return res;
 };
